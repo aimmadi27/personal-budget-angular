@@ -1,6 +1,8 @@
 const express=require('express');
 const app=express();
 const port=3000;
+const path=require('path');
+const fs=require('fs');
 
 app.use('/', express.static('public'));
 
@@ -26,7 +28,23 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/budget', (req, res) => {
-    res.json(budget); 
+    const filePath = path.join(__dirname, 'budget.json');
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading budget.json:", err);
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+        }
+
+        try {
+            const budgetData = JSON.parse(data);
+            res.json(budgetData);
+        } catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            res.status(500).json({ error: "Invalid JSON format" });
+        }
+    });
 });
 
 app.listen(port, () => {
